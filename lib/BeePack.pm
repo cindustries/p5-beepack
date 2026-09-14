@@ -244,6 +244,165 @@ implementation will be getting strict on this.
 This distribution includes L<bee>, which is a little tool to read, generate and
 manipulate B<BeePack> from the comandline.
 
+=func true
+
+  my $true = BeePack->true;
+
+Returns the MsgPack C<true> boolean singleton (from L<Data::MessagePack>), for
+building booleans inside arrays and hashes passed to L</set>. See L</set_bool>
+to force a single key to a boolean directly.
+
+=func false
+
+  my $false = BeePack->false;
+
+Returns the MsgPack C<false> boolean singleton, the counterpart to L</true>.
+
+=attr filename
+
+The path to the C<.bee> file on disk. Required, and read-only after
+construction. Used both to read the existing file on open and, on L</save>,
+as the destination C<CDB_File> renames the rebuilt file onto.
+
+=attr tempfile
+
+The path C<CDB_File> uses to build the new file before atomically renaming it
+onto L</filename> on L</save>. Its presence -- not a separate flag -- is what
+switches the pack to read/write mode: give a C<tempfile> (to L</open> or
+C<new>) and L</readonly> defaults to false; leave it out and the pack opens
+read-only. A pack that is not readonly but has no C<tempfile> is rejected at
+construction ("Read/Write opening requires tempfile").
+
+=attr nil_exists
+
+  BeePack->open('my.bee', undef, nil_exists => 1);
+
+Controls whether a key holding a nil (C<undef>) value counts as existing.
+Defaults to false, so by default L</exists> (and therefore L</get>) treats a
+nil-valued key exactly like an absent one. Set it to true to make L</exists>
+return true for a key that is present in the pack regardless of whether its
+value happens to be nil.
+
+=attr readonly
+
+Whether the pack refuses writes: every setter and L</save> croak on a
+readonly pack instead of mutating it. Lazily derives to true when no
+L</tempfile> was given and false when one was -- so the normal way to control
+this is by giving or withholding C<tempfile>, not by setting C<readonly>
+directly. It can still be passed explicitly to the constructor (for example,
+to open a pack with a tempfile but keep it read-only); passing it as false
+without a C<tempfile> is rejected at construction instead.
+
+=method open
+
+  my $beepack = BeePack->open($filename);                      # read-only
+  my $beepack = BeePack->open($filename, $tempfile);            # read/write
+  my $beepack = BeePack->open($filename, undef, nil_exists=>1); # read-only, nil_exists
+
+Constructor helper: turns the positional C<$filename>/C<$tempfile> pair into
+the matching named constructor arguments and calls C<new>. C<$tempfile> may
+be C<undef> to open read-only while still passing further C<%attr> (such as
+C<nil_exists>) through to C<new>.
+
+=method keys
+
+  my @keys = $beepack->keys;
+
+Returns the keys currently in the pack, in whatever order the underlying hash
+buffer yields them -- unlike L</save>, this does not sort.
+
+=method set
+
+  $beepack->set( $key => $value );
+
+MsgPack-packs C<$value> exactly as given (however Perl and L<Data::MessagePack>
+currently see its type) and stores it in the in-memory buffer under C<$key>,
+overwriting any existing value for that key. Nothing reaches disk until
+L</save>. Croaks on a L</readonly> pack. Use L</set_integer>, L</set_bool>,
+L</set_string> or L</set_nil> instead when the MsgPack type must be pinned
+regardless of how the Perl scalar happens to be flagged.
+
+=method set_type
+
+  $beepack->set_type( $key => $type => $value );
+
+Alternate setter that dispatches on the first character of C<$type> -- the
+same single-letter scheme the C<bee> command line uses (see
+L<bee/DESCRIPTION>): C<i> integer (L</set_integer>), C<b> bool
+(L</set_bool>), C<s> string (L</set_string>), C<n> nil (L</set_nil>;
+C<$value> is ignored), C<a> array (L</set> with C<$value> dereferenced as an
+arrayref), C<h> hash (L</set> with C<$value> dereferenced as a hashref), or
+an empty/undefined C<$type> for a plain L</set>. A new type letter is a
+paired change: add the branch here and the matching branch in C<bee>'s
+command-line dispatch.
+
+=method set_integer
+
+  $beepack->set_integer( $key => $value );
+
+Forces C<$value> to a MsgPack integer (Perl's C<0 + $value>) and L</set>s it,
+regardless of how C<$value> is currently represented.
+
+=method set_bool
+
+  $beepack->set_bool( $key => $value );
+
+Forces C<$value> to a MsgPack boolean -- L</true> if C<$value> is true in Perl
+terms, L</false> otherwise -- and L</set>s it.
+
+=method set_string
+
+  $beepack->set_string( $key => $value );
+
+Forces C<$value> to a MsgPack string (Perl's C<"$value">) and L</set>s it,
+regardless of how C<$value> is currently represented.
+
+=method set_nil
+
+  $beepack->set_nil( $key );
+
+Sets C<$key> to a MsgPack nil (C<undef>). See L</nil_exists> for how a
+nil-valued key interacts with L</exists>.
+
+=method exists
+
+  my $bool = $beepack->exists( $key );
+
+Returns false when C<$key> is not in the buffer at all. Otherwise, returns
+true unconditionally when L</nil_exists> is set; when it is not, unpacks the
+value and returns true only if that value is defined -- so by default a
+nil-valued key is reported as not existing.
+
+=method get
+
+  my $value = $beepack->get( $key );
+
+Returns C<undef> when L</exists> says C<$key> doesn't exist (which, by
+default, includes a key whose stored value is nil -- see L</nil_exists>);
+otherwise unpacks and returns the stored value.
+
+=method get_raw
+
+  my $bytes = $beepack->get_raw( $key );
+
+Returns the raw MsgPack-encoded bytes stored for C<$key>, unchanged -- no
+unpack and no L</exists> check -- or C<undef> if the key is absent from the
+buffer. Useful for passing an opaque value (such as a gzipped blob) straight
+through without paying for an unpack/repack round trip.
+
+=method save
+
+  $beepack->save;
+
+Rebuilds the on-disk C<.bee> file from the in-memory buffer: since
+L<CDB_File> has no in-place update, this creates a fresh C<CDB_File> at
+L</filename> via L</tempfile>, inserts every buffered key in sorted order (so
+the on-disk file is deterministic regardless of hash iteration order, though
+not necessarily byte-identical across cdb implementations), and finishes it,
+which atomically renames the tempfile onto C<filename>. The in-memory buffer
+remains the source of truth afterwards, so the pack stays usable for further
+L</get>/L</set> calls without reopening. Croaks on a L</readonly> pack.
+
 =head1 SEE ALSO
 
 =head2 L<bee>

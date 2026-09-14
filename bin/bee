@@ -100,4 +100,74 @@ exit 0;
     hulk "Bruce Banner" \
     superman "Clark Jerome Kent"
 
+=head1 DESCRIPTION
+
+C<bee> is a small command-line tool, bundled with L<BeePack>, for inspecting
+and manipulating a C<.bee> file directly from the shell. It takes up to three
+leading arguments -- C<bee FILE [KEY [TYPE VALUE...]]> -- and picks its mode
+from how many of them are given:
+
+=over 4
+
+=item C<bee FILE>
+
+No C<KEY>: opens C<FILE> read-only and lists every key in the pack, one per
+line.
+
+=item C<bee FILE KEY>
+
+A C<KEY> but no C<TYPE>: opens C<FILE> read-only and prints the value stored
+under C<KEY> -- arrays and hashes via L<Data::Dumper>, everything else as-is.
+A key that doesn't "exist" (see L<BeePack/nil_exists>; by default this
+includes a nil-valued key) prints nothing.
+
+=item C<bee FILE KEY TYPE VALUE...>
+
+A C<TYPE> as well: opens C<FILE> read/write (through a tempfile), sets C<KEY>
+to C<VALUE...> forced into the MsgPack type named by C<TYPE>, and saves.
+
+=back
+
+C<TYPE> is matched on its first character, mirroring L<BeePack/set_type> --
+adding a new letter here means adding the matching branch there, and vice
+versa.
+
+=opt n
+
+Nil. Takes no C<VALUE>. Sets C<KEY> to MsgPack nil via
+L<BeePack/set_nil>.
+
+=opt i
+
+Integer. Takes exactly one C<VALUE>, forced to a MsgPack integer via
+L<BeePack/set_integer>.
+
+=opt s
+
+String. Takes exactly one C<VALUE>, forced to a MsgPack string via
+L<BeePack/set_string>.
+
+=opt b
+
+Bool. Takes exactly one C<VALUE>; L<BeePack/set_bool> stores it as MsgPack
+C<true> or C<false> according to whether C<VALUE> is true or false in Perl
+terms (so C<0> and the empty string store as false).
+
+=opt a
+
+Array. Every remaining C<VALUE> is stored as one MsgPack array.
+
+=opt h
+
+Hash. Every remaining C<VALUE> is stored as one MsgPack hash -- an even count
+of C<KEY VALUE KEY VALUE ...> pairs is required.
+
+=example Storing a numeric-looking value as a string
+
+  $ bee test.bee key s 0042
+
+=example Streaming a raw value through a pipe
+
+  $ bee test.bee gzipped_value | gunzip -c
+
 =cut
