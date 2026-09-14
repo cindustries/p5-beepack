@@ -1,0 +1,14 @@
+---
+class: standard
+created: 2026-09-14T05:21:58Z
+id: 3
+priority: medium
+status: backlog
+tags:
+- tests
+- cli
+title: Test the bee CLI end-to-end
+updated: 2026-09-14T05:21:58Z
+---
+
+bin/bee has no test. Cover: list keys, get scalar/array/hash, set each type via the command line, and that its type dispatch stays in sync with set_type in lib/BeePack.pm.
