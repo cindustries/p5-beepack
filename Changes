@@ -4,8 +4,9 @@
     own constant-database implementation. BeePack no longer needs a system CDB
     library (libcdb) — a plain cpanm install works with no OS package. The
     on-disk .bee format is unchanged and existing files read back identically.
-  - Continuous integration runs on GitHub Actions via the shared dzil-test
-    composite action from the Author::GETTY bundle.
+  - Continuous integration moved to SimpiCI: a thin GitHub Actions workflow
+    delegates to the SimpiCI reusable workflow, with the per-Perl test jobs
+    declared as .cicd/ scripts and run against Perl 5.36, 5.38 and 5.40.
   - LICENSE is now a committed file in the repository.
   - Repository, bugtracker and support metadata are generated from dist.ini and
     the git remote instead of hand-written POD, which also corrects the stale
