@@ -4,33 +4,38 @@ our $VERSION = '0.200';
 
 use Moo;
 use bytes;
-use CDB::TinyCDB;
+use CDB_File;
 use Data::MessagePack;
 use Carp qw( croak );
 
 sub true { Data::MessagePack::true() }
 sub false { Data::MessagePack::false() }
 
-# currently workaround to be reset
-has cdb => (
-  is => 'rw',
-  lazy => 1,
-  builder => 1,
+# CDB_File has no in-place update, so the source of truth is an in-memory
+# buffer of key => raw MsgPack bytes, seeded from the existing file on open
+# and written back out atomically on save.
+has _data => (
+  is => 'lazy',
   init_arg => undef,
-  handles => [qw(
-    keys
-  )],
 );
 
-sub _build_cdb {
+sub _build__data {
   my ( $self ) = @_;
-  return -f $self->filename
-    ? CDB::TinyCDB->open($self->filename, $self->has_tempfile ? (
-        for_update => $self->tempfile
-      ) : ())
-    : $self->readonly
-      ? croak("Can't open non-existing readonly database ".$self->filename)
-      : CDB::TinyCDB->create($self->filename,$self->tempfile);
+  my %data;
+  if ( -f $self->filename ) {
+    tie my %cdb, 'CDB_File', $self->filename
+      or croak("Can't open BeePack ".$self->filename.": ".$!);
+    %data = %cdb;
+    untie %cdb;
+  } elsif ( $self->readonly ) {
+    croak("Can't open non-existing readonly database ".$self->filename);
+  }
+  return \%data;
+}
+
+sub keys {
+  my ( $self ) = @_;
+  return CORE::keys %{$self->_data};
 }
 
 has filename => (
@@ -68,7 +73,7 @@ sub _build_data_messagepack { Data::MessagePack->new->canonical->utf8 }
 sub BUILD {
   my ( $self ) = @_;
   croak("Read/Write opening requires tempfile") if !$self->readonly && !$self->has_tempfile;
-  $self->cdb;
+  $self->_data;
   $self->data_messagepack;
 }
 
@@ -84,7 +89,7 @@ sub open {
 sub set {
   my ( $self, $key, $value ) = @_;
   $self->readonly_check;
-  $self->cdb->put_replace($key,$self->data_messagepack->pack($value));
+  $self->_data->{$key} = $self->data_messagepack->pack($value);
 }
 
 sub readonly_check {
@@ -140,31 +145,34 @@ sub set_nil {
 
 sub exists {
   my ( $self, $key ) = @_;
-  return 0 unless $self->cdb->exists($key);
-  return $self->cdb->exists($key) if $self->nil_exists;
-  my $msgpack = $self->cdb->get($key);
-  my $value = $self->data_messagepack->unpack($msgpack);
+  return 0 unless CORE::exists $self->_data->{$key};
+  return 1 if $self->nil_exists;
+  my $value = $self->data_messagepack->unpack($self->_data->{$key});
   return defined $value ? 1 : 0;
 }
 
 sub get {
   my ( $self, $key ) = @_;
   return undef unless $self->exists($key);
-  return $self->data_messagepack->unpack(scalar $self->cdb->get($key));
+  return $self->data_messagepack->unpack($self->_data->{$key});
 }
 
 sub get_raw {
   my ( $self, $key ) = @_;
-  return scalar $self->cdb->get($key);
+  return $self->_data->{$key};
 }
 
 sub save {
   my ( $self ) = @_;
   croak("Trying to save readonly CDB ".$self->filename) if $self->readonly;
-  $self->cdb->finish( save_changes => 1, reopen => 0 );
-  # Bug in CDB::TinyCDB? reopen => 1 is not reopening
-  $self->cdb(undef);
-  $self->cdb($self->_build_cdb);
+  my $cdb = CDB_File->new($self->filename,$self->tempfile)
+    or croak("Can't create BeePack ".$self->filename.": ".$!);
+  for my $key ( sort CORE::keys %{$self->_data} ) {
+    $cdb->insert($key,$self->_data->{$key});
+  }
+  $cdb->finish;
+  # in-memory buffer stays the source of truth, so the pack is usable for
+  # further reads and writes after save
   return 1;
 }
 
@@ -240,6 +248,6 @@ manipulate B<BeePack> from the comandline.
 
 =head2 L<bee>
 
-=head2 L<CDB::TinyCDB>
+=head2 L<CDB_File>
 
 =head2 L<Data::MessagePack>
