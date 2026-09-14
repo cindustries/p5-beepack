@@ -1,0 +1,20 @@
+---
+claimed_at: 2026-09-14T20:37:27Z
+claimed_by: p5-beepack
+class: standard
+completed: 2026-09-14T20:37:27Z
+created: 2026-09-14T20:37:18Z
+id: 5
+priority: high
+started: 2026-09-14T20:37:27Z
+status: done
+tags:
+- release
+- ci
+title: Switch CI to SimpiCI
+updated: 2026-09-14T20:37:27Z
+---
+
+Replace Author::GETTY dzil-test GH action with SimpiCI reusable workflow + .cicd/ perl test jobs (5.36/5.38/5.40, prove -lr t/). First p5 dist on SimpiCI.
+
+Done in commit d66dd2d. Verified: bash -n + real job commands (cpanm --installdeps + prove -lr t/) green locally, dzil build exit 0, scripts committed +x (100755). CI uses prove not dzil test by design.
