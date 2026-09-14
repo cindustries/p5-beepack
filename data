@@ -1,0 +1,18 @@
+---
+class: standard
+completed: 2026-09-14T16:28:48Z
+created: 2026-09-14T05:21:48Z
+id: 1
+priority: low
+started: 2026-09-14T16:28:48Z
+status: done
+tags:
+- cdb
+- tech-debt
+title: 'save() reopen workaround: verify still needed'
+updated: 2026-09-14T16:28:48Z
+---
+
+lib/BeePack.pm save() does finish(reopen=>0) then rebuilds cdb by hand, with the comment "Bug in CDB::TinyCDB? reopen => 1 is not reopening". Check against the current CDB::TinyCDB whether reopen=>1 works now; if so, collapse the workaround, otherwise leave a firmer note.
+
+Resolved by design: switched storage backend to CDB_File (v0.200), which has no reopen at all. The workaround was removed in commit 65336e3.
