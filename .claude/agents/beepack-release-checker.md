@@ -58,7 +58,9 @@ run `dzil release` and never touch the CPAN upload path.
    `.travis.yml` is left behind.
 
 8. **`dzil build`** — clean, no warnings, no missing files. Inspect the built `META.json`
-   `provides` and confirm `BeePack` is listed at the dist version.
+   `provides` and confirm `BeePack` is listed at the dist version. Also confirm the built
+   `MANIFEST` carries **no dev tooling** — `.claude/`, `CLAUDE.md` and `.karr` are excluded
+   via `gather_exclude_match` in `dist.ini` and must not reappear in the tarball.
 
 9. **`dzil test`** — green, recursively. Report skipped tests as skipped; a suite that
    skipped is not a suite that passed.
