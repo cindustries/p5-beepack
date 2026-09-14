@@ -1,6 +1,6 @@
 ---
 name: beepack-core
-description: Load before editing lib/BeePack.pm or bin/bee — the CDB+MsgPack file model, the readonly/tempfile open modes, nil_exists semantics, the type-setter surface, and the save/reopen workaround.
+description: Load before editing lib/BeePack.pm or bin/bee — the CDB_File+MsgPack file model, the readonly/tempfile open modes, the in-memory buffer, nil_exists semantics, and the type-setter surface.
 user-invocable: false
 allowed-tools: Read, Grep, Glob
 model: sonnet
@@ -21,7 +21,8 @@ Consumer-facing usage lives in the module's own POD (`=synopsis`/`=description`)
 
 ## The file model: CDB values, MsgPack payloads
 
-- The container is **CDB** via `CDB::TinyCDB` (an XS module needing the system `libcdb`).
+- The container is **CDB** via `CDB_File`, whose XS carries its own constant-database
+  implementation — there is **no system `libcdb` dependency**; a plain `cpanm` install works.
   CDB is a read-optimised on-disk hash. BeePack **deliberately stores exactly one value
   per key** — CDB supports several values per key, and BeePack does not use that. Do not
   add multi-value behaviour without treating it as a format change.
@@ -43,9 +44,10 @@ Consumer-facing usage lives in the module's own POD (`=synopsis`/`=description`)
 - **Read-only** (no tempfile): `BeePack->open('my.bee')`. `readonly` is lazy and derives
   to **true** when there is no tempfile. Opening a non-existent file read-only croaks.
 - **Read/write** (a tempfile): `BeePack->open('my.bee', 'my.bee.'.$$)`. `readonly` derives
-  to **false**; the CDB is opened `for_update => $tempfile` (or `create($file,$tempfile)`
-  if the file does not yet exist). `BUILD` croaks *"Read/Write opening requires tempfile"*
-  if `readonly` is false but no tempfile is present — that guard is the invariant, keep it.
+  to **false**. `CDB_File` has no in-place update, so the source of truth is an in-memory
+  buffer (`_data`, key → raw MsgPack bytes) seeded from the existing file on open (an absent
+  file starts empty), and `save` writes it back out. `BUILD` croaks *"Read/Write opening
+  requires tempfile"* if `readonly` is false but no tempfile is present — keep that guard.
 - Every setter calls `readonly_check` first and croaks on a read-only pack. The tempfile,
   not a mode flag, is the source of truth for writability — don't add a separate writable
   boolean that can disagree with it.
@@ -53,17 +55,18 @@ Consumer-facing usage lives in the module's own POD (`=synopsis`/`=description`)
 ## nil_exists — the one behavioural quirk that surprises people
 
 By default **a key whose value is nil (`undef`) is reported as not existing.** `exists`:
-returns 0 if the key is absent from the CDB; if present *and* `nil_exists` is set, returns
-the raw CDB existence; otherwise it unpacks the value and returns 1 only if it is defined.
+returns 0 if the key is absent from the buffer; if present *and* `nil_exists` is set, returns
+true; otherwise it unpacks the value and returns 1 only if it is defined.
 `get` returns `undef` for a key that does not "exist" under this rule.
 
 Opening with `nil_exists => 1` flips this: a nil-valued key then counts as existing. This
 is a documented, tested behaviour (`t/simple.t` asserts both directions) — never "clean it
-up" into plain CDB existence.
+up" into plain key existence.
 
 ## The setter surface
 
-- `set($key,$value)` — MsgPack-packs whatever it's given (`put_replace`, so it overwrites).
+- `set($key,$value)` — MsgPack-packs whatever it's given and writes it into the in-memory
+  buffer (`_data`), overwriting any prior value.
 - `set_integer` (`0 + $value`), `set_string` (`"$value"`), `set_bool` (MsgPack
   `true`/`false`), `set_nil` (`undef`). The forcing is the point: it pins the MsgPack type
   regardless of how Perl currently sees the scalar.
@@ -74,21 +77,22 @@ up" into plain CDB existence.
 - `BeePack->true` / `BeePack->false` expose the MsgPack boolean singletons so callers can
   build the right booleans inside arrays/hashes passed to `set`.
 - `get` unpacks; `get_raw` returns the **raw MsgPack bytes** unchanged (used e.g. to pipe a
-  gzipped blob straight out). `cdb` delegates `keys` (`handles => [qw( keys )]`).
+  gzipped blob straight out). `keys` lists the keys of the in-memory buffer.
 
-## save() reopens by hand — do not "simplify" it
+## save() rebuilds the file from the buffer
 
 ```perl
-$self->cdb->finish( save_changes => 1, reopen => 0 );
-# Bug in CDB::TinyCDB? reopen => 1 is not reopening
-$self->cdb(undef);
-$self->cdb($self->_build_cdb);
+my $cdb = CDB_File->new($self->filename,$self->tempfile) or croak(...);
+$cdb->insert($_, $self->_data->{$_}) for sort CORE::keys %{$self->_data};
+$cdb->finish;   # atomic rename of the tempfile onto filename
 ```
 
-`save` finishes the CDB with `reopen => 0` and then manually rebuilds the `cdb` attribute,
-because `CDB::TinyCDB`'s own `reopen => 1` was observed not to reopen. That two-step is a
-deliberate workaround, not redundancy — collapsing it to `reopen => 1` reintroduces the
-bug. `save` croaks on a read-only pack.
+`CDB_File` builds a fresh cdb and renames it into place atomically via the tempfile — there
+is no in-place update and no reopen. The in-memory `_data` buffer stays the source of truth,
+so the pack is immediately usable for further reads and writes after `save`. Keys are
+inserted in `sort` order, so the on-disk file is deterministic regardless of hash ordering
+(only the *content* is guaranteed identical across cdb implementations, not the exact byte
+layout). `save` croaks on a read-only pack.
 
 ## Changing the distribution — checklist
 

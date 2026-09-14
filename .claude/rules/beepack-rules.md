@@ -80,13 +80,14 @@ publishes under the maintainer's account.
 
 - **`prove -l t/` is not recursive** and silently skips subdirectory tests, exiting 0. Use
   `dzil test` or `prove -lr t/`. Reserve non-`-r` for a single named file.
-- **`CDB::TinyCDB` is XS over the system `libcdb`.** A machine without `libcdb`(-dev) can't
-  build or test; CI installs `libcdb-dev` before the shared dzil-test action.
+- **The CDB backend is `CDB_File`, self-contained** — it carries its own cdb implementation,
+  so there is no system `libcdb` dependency and CI needs no system-library step. `CDB_File`
+  has no in-place update, so BeePack holds an in-memory buffer and `save` rebuilds the file.
 - **The CLI and the library must not drift.** `bin/bee`'s command-line type dispatch mirrors
   `set_type` in `lib/BeePack.pm`; a new value type is a paired edit in both.
-- **`nil_exists` and `save`'s manual reopen are deliberate** (skill `beepack-core`). A grep
-  will make each look like dead-simple code worth collapsing — both are load-bearing and
-  tested.
+- **`nil_exists` and the in-memory-buffer / rebuild-on-save model are deliberate** (skill
+  `beepack-core`). A grep makes `nil_exists` look like dead-simple code worth collapsing —
+  it is load-bearing and tested.
 
 ## Perl conventions — reference, don't restate
 

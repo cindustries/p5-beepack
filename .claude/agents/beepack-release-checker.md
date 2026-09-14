@@ -29,7 +29,7 @@ run `dzil release` and never touch the CPAN upload path.
    grep -rn 'our \$VERSION' lib bin        # both files, same literal
    ```
 
-2. **`cpanfile`** — every runtime dependency actually used is declared (`CDB::TinyCDB`,
+2. **`cpanfile`** — every runtime dependency actually used is declared (`CDB_File`,
    `Data::MessagePack`, `Moo`, `File::Temp`, `Carp`), the `on test` block declares only
    test-phase deps, and no author-test dep (e.g. `Test::Pod`) is faked into `on test` —
    those come from `dzil listdeps --author` in CI. Any Getty-authored runtime dep (there
@@ -53,9 +53,9 @@ run `dzil release` and never touch the CPAN upload path.
    `GitHub::CreateRelease` publishes that section verbatim as the release notes.
 
 7. **CI** — `.github/workflows/ci.yml` present, driving the shared
-   `Getty/p5-dist-zilla-pluginbundle-author-getty/.github/actions/dzil-test` action, with
-   the `libcdb-dev` system-library install step before it (CDB::TinyCDB is XS). No stale
-   `.travis.yml` left behind.
+   `Getty/p5-dist-zilla-pluginbundle-author-getty/.github/actions/dzil-test` action. No
+   system-library install step is needed (`CDB_File` is self-contained), and no stale
+   `.travis.yml` is left behind.
 
 8. **`dzil build`** — clean, no warnings, no missing files. Inspect the built `META.json`
    `provides` and confirm `BeePack` is listed at the dist version.
