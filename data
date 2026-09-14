@@ -1,0 +1,13 @@
+---
+class: standard
+created: 2026-09-14T05:21:53Z
+id: 2
+priority: medium
+status: backlog
+tags:
+- tests
+title: 'Test coverage: get_raw and set_type dispatch'
+updated: 2026-09-14T05:21:53Z
+---
+
+No test exercises get_raw (raw MsgPack bytes) or the set_type first-char dispatch (i/b/s/n/a/h and empty). Add assertions, including that set_type array/hash round-trip equals the direct set() form.
