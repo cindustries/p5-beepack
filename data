@@ -1,0 +1,22 @@
+---
+claimed_at: 2026-09-14T19:55:09Z
+claimed_by: p5-beepack
+class: standard
+completed: 2026-09-14T19:55:09Z
+created: 2026-09-14T19:46:49Z
+id: 4
+priority: high
+started: 2026-09-14T19:47:34Z
+status: done
+tags:
+- release
+- docs
+title: Finish POD + README.md for 0.200 release
+updated: 2026-09-14T19:55:09Z
+---
+
+Complete public-API POD (=attr/=method) in lib/BeePack.pm and bin/bee (worker lane); hand-write GitHub README.md (main-agent lane). Prereq for release.
+
+2026-09-14 19:53 POD portion done (worker lane): added =func true/false, =attr filename/tempfile/nil_exists/readonly, =method open/keys/set/set_type/set_integer/set_bool/set_string/set_nil/exists/get/get_raw/save to lib/BeePack.pm; added =head1 DESCRIPTION + =opt n/i/s/b/a/h + =example blocks to bin/bee. Verified: dzil build exits 0, dzil test passes (incl. t/author-pod-syntax.t), prove -lr t/ passes (31 tests). No runtime code touched, diff is additive POD only. README.md (main-agent lane) still open.
+
+POD done by beepack-worker (=func/=attr/=method in lib, DESCRIPTION+=opt/=example in bin); README.md hand-written by main agent. Verified: dzil test PASS (33 tests), dzil build exit 0, diffs reviewed (accurate on nil_exists, buffer/rebuild-on-save, tempfile->readonly, set_type<->CLI mirror). Docs-only, no runtime change.
