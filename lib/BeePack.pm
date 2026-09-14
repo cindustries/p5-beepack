@@ -1,5 +1,6 @@
 package BeePack;
 # ABSTRACT: Primitive MsgPack based key value storage
+our $VERSION = '0.200';
 
 use Moo;
 use bytes;
@@ -242,18 +243,3 @@ manipulate B<BeePack> from the comandline.
 =head2 L<CDB::TinyCDB>
 
 =head2 L<Data::MessagePack>
-
-=head1 SUPPORT
-
-IRC
-
-  Join #hardware on irc.perl.org. Highlight Getty for fast reaction :).
-
-Repository
-
-  http://github.com/cindustries/perl-beepack
-  Pull request and additional contributors are welcome
-
-Issue Tracker
-
-  http://github.com/cindustries/perl-beepack/issues

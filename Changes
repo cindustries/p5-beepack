@@ -1,0 +1,38 @@
+{{$NEXT}}
+
+  - Continuous integration runs on GitHub Actions via the shared dzil-test
+    composite action from the Author::GETTY bundle; CI installs the system
+    library libcdb-dev that CDB::TinyCDB needs.
+  - LICENSE is now a committed file in the repository.
+  - Repository, bugtracker and support metadata are generated from dist.ini and
+    the git remote instead of hand-written POD, which also corrects the stale
+    repository URL.
+
+0.103     2020-12-10 05:52:06Z
+
+  - Repository moved to a new home; Travis CI configuration refreshed.
+
+0.102     2014-12-18 03:39:10Z
+
+  - Add the nil_exists attribute: by default a key whose value is nil is
+    reported as not existing; open with nil_exists => 1 to treat it as existing.
+  - Expand the documentation and reorganise the code.
+
+0.101     2014-12-18 03:08:40Z
+
+  - Stop using MsgPack prefer_integer, so a value keeps the type it was given.
+
+0.100     2014-12-18 02:36:09Z
+
+  - Rework BeePack into a CDB container with MsgPack-encoded values — the
+    current key-value storage design.
+  - Add the bee command-line tool for reading and manipulating beepacks, and
+    tune the prerequisites.
+
+0.002     2014-12-14 02:01:39Z
+
+  - bee prints a value's raw bytes so it can be piped; add its documentation.
+
+0.001     2014-12-14 01:50:54Z
+
+  - First release.
