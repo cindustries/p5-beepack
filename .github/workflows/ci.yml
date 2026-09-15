@@ -10,3 +10,5 @@ jobs:
       contents: read
       packages: write
     uses: Getty/simpici/.github/workflows/simpici.yml@main
+    with:
+      provider: ghcr.io/getty/simpici-dzil-provider:main

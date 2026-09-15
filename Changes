@@ -5,8 +5,9 @@
     library (libcdb) — a plain cpanm install works with no OS package. The
     on-disk .bee format is unchanged and existing files read back identically.
   - Continuous integration moved to SimpiCI: a thin GitHub Actions workflow
-    delegates to the SimpiCI reusable workflow, with the per-Perl test jobs
-    declared as .cicd/ scripts and run against Perl 5.36, 5.38 and 5.40.
+    delegates to the SimpiCI reusable workflow with the shared [@Author::GETTY]
+    provider, which generates a dzil test job for each supported Perl version
+    (5.36, 5.38 and 5.40). The distribution ships no CI job files of its own.
   - LICENSE is now a committed file in the repository.
   - Repository, bugtracker and support metadata are generated from dist.ini and
     the git remote instead of hand-written POD, which also corrects the stale
