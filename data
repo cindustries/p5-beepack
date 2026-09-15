@@ -1,0 +1,50 @@
+---
+claimed_at: 2026-09-15T02:49:49Z
+claimed_by: p5-beepack
+class: standard
+completed: 2026-09-15T02:49:49Z
+created: 2026-09-15T02:10:29Z
+id: 6
+priority: high
+started: 2026-09-15T02:49:49Z
+status: done
+tags:
+- ci
+- simpici
+- blocked
+title: 'SimpiCI-Konsument: d66dd2d durch Provider-Ref ersetzen, 0.200 entparken'
+updated: 2026-09-15T02:49:49Z
+---
+
+## Ziel
+
+BeePack als **erster Konsument** des Getty-SimpiCI-Providers. Ergebnis: CI laeuft ueber
+SimpiCI mit dem bundle-eigenen Provider, `dzil test` je unterstuetzter Perl-Version, und
+BeePack committet dafuer **fast nichts**.
+
+## ABHAENGIGKEIT -- zuletzt umsetzen
+
+Braucht (a) **SimpiCI karr #7** (Provider-Hook) UND (b) das gepinnte **Getty-Provider-
+Image** (Ticket im pluginbundle-Repo). Erst wenn beide stehen.
+
+## Was tun
+
+- `.github/workflows/ci.yml` = schlanker Caller der SimpiCI-Reusable **mit `provider`-Ref**
+  (das gepinnte Getty-Provider-Image). **KEIN** committetes `.cicd/` -- der Provider
+  generiert `perl+<ver>+test.sh` zur Laufzeit in die Staging-Dir.
+- **Commit `d66dd2d` ersetzen/reverten:** die hand-gerollte, `prove`-basierte
+  `.cicd/perl+5.3{6,8}+test.unit.sh` + `perl+5.40+test.unit.sh` entfernen. Die ist kaputt
+  (alle drei -> `job=unit, phase=test` -> phase/job-Dedupe-Kollision -> Exit 64) und durch
+  den Provider ueberholt.
+- **Changes-Bullet korrigieren:** aktuell beschreibt er die (kaputte) direkte `.cicd`-
+  Loesung; neu: CI laeuft ueber SimpiCI mit dem [@Author::GETTY]-Provider, `dzil test` je
+  Perl-Version.
+
+## Danach
+
+0.200-Release **entparken**. POD + README sind fertig und committet (commit `8208818`).
+Dann kann Getty releasen (dzil release -- nur mit explizitem Go, nie automatisch).
+
+## Refs
+
+SimpiCI karr #7; Bundle-Provider-Ticket (p5-dist-zilla-pluginbundle-author-getty).
