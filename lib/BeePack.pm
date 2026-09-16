@@ -1,6 +1,6 @@
 package BeePack;
 # ABSTRACT: Primitive MsgPack based key value storage
-our $VERSION = '0.200';
+our $VERSION = '0.201';
 
 use Moo;
 use bytes;

@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 # PODNAME: bee
 # ABSTRACT: Small application to handle bee files
-our $VERSION = '0.200';
+our $VERSION = '0.201';
 
 use strict;
 use warnings;
