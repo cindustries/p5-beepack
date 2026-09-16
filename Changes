@@ -7,7 +7,7 @@
   - Continuous integration moved to SimpiCI: a thin GitHub Actions workflow
     delegates to the SimpiCI reusable workflow with the shared [@Author::GETTY]
     provider, which generates a dzil test job for each supported Perl version
-    (5.20 through 5.44). The distribution ships no CI job files of its own.
+    (5.22 through 5.44). The distribution ships no CI job files of its own.
   - LICENSE is now a committed file in the repository.
   - Repository, bugtracker and support metadata are generated from dist.ini and
     the git remote instead of hand-written POD, which also corrects the stale
