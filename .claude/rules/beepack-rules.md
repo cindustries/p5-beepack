@@ -32,7 +32,7 @@ Depends on whether the Agent/Task tool is available to you.
 
 - **You can spawn subagents** (orchestrating main agent): do NOT touch behavior-relevant
   code yourself — delegate. Your lane: coordinate, inspect, plan, review diffs, run tests,
-  manage git, edit `Changes`/`README`. When in doubt, delegate. Why: only the `beepack-*`
+  edit `Changes`/`README`. When in doubt, delegate. Why: only the `beepack-*`
   agents get their skills force-loaded via `briefing.skills`; you get no briefing and would
   touch the CDB/MsgPack model and the CLI with too little context.
 
@@ -40,13 +40,16 @@ Depends on whether the Agent/Task tool is available to you.
   |---|---|
   | Implement / refactor / debug `lib/BeePack.pm` or `bin/bee` (incl. POD) | `beepack-worker` (default) |
   | Write or extend tests in `t/` | `beepack-test-writer` |
-  | Pre-release audit | `beepack-release-checker` |
+  | Commits, `Changes`, card → done, pre-release audit | `beepack-release-manager` |
 
 - **You cannot spawn subagents** (you ARE a `beepack-*` agent): the lock does not apply —
   implement, refactor, debug and test per these rules.
 
 Behavior-relevant = `lib/BeePack.pm`, `bin/bee`, their POD, and the tests in `t/`. Prose in
 `README`/`Changes` bullets is not.
+
+**Only `beepack-release-manager` commits.** A worker leaves a commit-ready tree and hands its card
+to `review`; you then dispatch `beepack-release-manager` to cut the commit and close the card.
 
 ## Coordination — karr board (always in scope)
 
@@ -56,7 +59,7 @@ repo (single distribution, one board, no cross-repo handoff).
 
 - `karr list --compact` / `karr board` — open work · `karr show ID` — detail
 - `karr create "Title" --priority high --tags a,b --body '…'` · `karr edit ID -a "note"`
-  · `--claim NAME` · `karr move ID in-progress` — full surface: skill `kanban-issues-karr-cli`
+  · `--claim NAME` · `karr move ID in-progress` — full surface: skill `kanban-issues-karr-coordination`
 
 Record drift and follow-up work as tickets rather than growing the current change.
 **Serialize board mutations when fanning out** — parallel implementation is fine, but

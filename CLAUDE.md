@@ -20,7 +20,7 @@ principle, the lanes and this repo's hazards are in `.claude/rules/beepack-rules
 |---|---|
 | Implement / refactor / debug `lib/BeePack.pm` or `bin/bee` (incl. POD) | `beepack-worker` (default) |
 | Write or extend tests in `t/` | `beepack-test-writer` |
-| Pre-release audit | `beepack-release-checker` |
+| Commits, `Changes`, card → done, pre-release audit | `beepack-release-manager` |
 
 The agents carry their conventions via `briefing.skills` (see `.claude/agents/`); the main
 agent delegates rather than loading them. Skill sources live under `.claude/skills/` —
