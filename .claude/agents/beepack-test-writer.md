@@ -2,7 +2,6 @@
 name: beepack-test-writer
 description: "Write and extend BeePack tests in t/. Network-free and service-free: exercise the CDB+MsgPack round-trip, the readonly/read-write open modes, nil_exists both directions and the set_*/set_type type fidelity against literal fixtures in File::Temp tempfiles. Use for test additions, regression scaffolding and reproducing reported bugs."
 model: sonnet
-allowed-tools: Read, Edit, Write, Bash, Glob, Grep
 briefing:
   skills:
     - getty-perl-core

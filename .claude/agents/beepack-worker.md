@@ -2,7 +2,6 @@
 name: beepack-worker
 description: "Default BeePack worker — implement, refactor, debug and test this distribution. Owns lib/BeePack.pm (the Moo class: CDB_File+MsgPack storage, readonly/tempfile open modes, nil_exists semantics, the set_*/set_type surface, the in-memory buffer and rebuild-on-save) and bin/bee (the CLI). Pre-loaded with Getty's Perl house rules, Moo patterns, the [@Author::GETTY] release conventions and the BeePack internals. Leaves a commit-ready tree; never commits — commits belong to beepack-release-manager."
 model: inherit
-allowed-tools: Read, Edit, Write, Bash, Glob, Grep
 briefing:
   skills:
     - getty-perl-core

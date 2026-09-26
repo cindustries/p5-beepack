@@ -2,7 +2,6 @@
 name: beepack-release-manager
 description: "Owns beepack's commits and release readiness — cuts commits from the worker's commit-ready tree, writes commit messages and Changes entries, moves karr cards to done. Release audit: BeePack before a release — cpanfile deps declared and pinned, dist.ini metadata intact, a committed LICENSE that matches, $VERSION present and identical in lib/BeePack.pm and bin/bee, Changes current, the GitHub Actions CI in shape, and dzil build/test clean with a complete META. Workers never commit; this agent does. Never pushes, tags or releases."
 model: sonnet
-allowed-tools: Read, Edit, Write, Bash, Glob, Grep
 briefing:
   skills:
     - getty-git-commit-style
