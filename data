@@ -1,0 +1,22 @@
+---
+class: standard
+created: 2026-10-06T19:41:31Z
+id: 8
+priority: low
+status: backlog
+tags:
+- bug
+- api
+- review-2026-10-06
+title: set_type silently does nothing for an unknown type
+updated: 2026-10-06T19:41:31Z
+---
+
+`lib/BeePack.pm:100-121`: the dispatch is an `if/elsif` chain on the first letter of `$type` with no final `else`. Any other type falls through and the key is simply not set - no croak, no warning.
+
+Reproduced: `$b->set_type('k', 'x', 'v'); $b->exists('k')` -> 0, and likewise `set_type('f', 'float', 1.5)`. `bin/bee:40-42` handles the same situation correctly with `croak("Unknown type ".$type)`.
+
+Done when: `set_type` croaks on an unknown type, with the assertion added to the dispatch test that k2 asks for.
+
+---
+Fleet review 2026-10-06 · kind: bug · confidence: verified
