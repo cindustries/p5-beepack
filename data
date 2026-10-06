@@ -1,0 +1,25 @@
+---
+class: standard
+created: 2026-10-06T19:41:26Z
+id: 7
+priority: medium
+status: backlog
+tags:
+- bug
+- cli
+- review-2026-10-06
+title: 'bee: write mode puts its temp file in /tmp, so saving fails whenever the .bee
+  file lives on another filesystem'
+updated: 2026-10-06T19:41:26Z
+---
+
+`bin/bee:18`: `my $tmpfile = tmpnam();` - a name under the system temp dir, handed to `BeePack->open($file, $tmpfile)`. `BeePack::save` (`lib/BeePack.pm:165-177`) gives it to `CDB_File->new($filename, $tempfile)`, and CDB_File's `finish` *renames* the temp file onto the target (its POD: "`$tmp` is the name of a temporary file which can be atomically renamed to `$final`"). `rename(2)` does not cross filesystems, so `bee ~/data.bee key s value` dies whenever `/tmp` is its own mount - on this machine `/tmp` is tmpfs and `/home` is ext4 (`df /tmp /home/getty`), which is the Debian 13 default.
+
+The failure path itself was reproduced by making the rename fail inside one filesystem: `save` dies with `Failed to rename <tmp> to <target>. at lib/BeePack.pm line 173` and leaves the temp file behind. (The cross-device case was not run because it needs a write outside the review scratchpad.) The test suite cannot see it: `t/simple.t:10-11` and `t/integer.t:10-11` take both names from `tmpnam()`, i.e. the same filesystem, and `bin/bee` has no test at all (k3).
+
+`tmpnam()` is also a predictable name in a world-writable directory that is opened later.
+
+Done when: `bee` creates its temp file next to the target (e.g. `File::Temp->new(DIR => dirname($file), UNLINK => 0)` or `"$file.tmp.$$"`), the BeePack POD for `tempfile` says it must be on the same filesystem as `filename`, and the k3 end-to-end test writes to a file outside the temp dir.
+
+---
+Fleet review 2026-10-06 · kind: bug · confidence: verified
