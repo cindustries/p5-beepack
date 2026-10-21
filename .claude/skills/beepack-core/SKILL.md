@@ -94,6 +94,16 @@ inserted in `sort` order, so the on-disk file is deterministic regardless of has
 (only the *content* is guaranteed identical across cdb implementations, not the exact byte
 layout). `save` croaks on a read-only pack.
 
+## Running the tests
+
+`prove -l t/` is **not recursive**: it skips the subdirectories of `t/` and still exits 0,
+so a suite that only runs `t/*.t` looks green while the nested tests never ran. Use `dzil test`
+or `prove -lr t/`; reserve non-`-r` for a single named file.
+
+The suite is network-free (`t/load.t`, `t/simple.t`, `t/integer.t`). Two of the files can
+regenerate their fixture `.bee` via `BEEPACK_GENERATE_SIMPLE_TESTDB` /
+`BEEPACK_GENERATE_INTEGER_TESTDB` — use that when a fixture change is part of the fix.
+
 ## Changing the distribution — checklist
 
 1. `lib/BeePack.pm` and `bin/bee` each carry `# ABSTRACT:` and `our $VERSION` (release
@@ -104,9 +114,7 @@ layout). `save` croaks on a read-only pack.
 3. Any change to how a value is packed or to `nil_exists`/readonly behaviour is a
    round-trip change — a value written by the new code must read back equal, and the
    read-only/read-write and `nil_exists` paths must all still hold.
-4. `dzil test`, or `prove -lr t/` while iterating. The suite (`t/load.t`, `t/simple.t`,
-   `t/integer.t`) is network-free; `t/simple.t` and `t/integer.t` can regenerate a fixture
-   `.bee` via `BEEPACK_GENERATE_SIMPLE_TESTDB` / `BEEPACK_GENERATE_INTEGER_TESTDB`.
+4. `dzil test`, or `prove -lr t/` while iterating — see *Running the tests* above.
 5. User-facing change → a bullet under `{{$NEXT}}` in `Changes`.
 
 ## POD is auto-woven — do not hand-write generated sections
