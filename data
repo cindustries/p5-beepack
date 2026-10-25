@@ -1,0 +1,20 @@
+---
+claimed_at: 2026-10-25T02:31:55Z
+claimed_by: offen-2610
+class: standard
+completed: 2026-10-25T02:31:55Z
+created: 2026-09-14T05:21:58Z
+id: 3
+priority: medium
+started: 2026-10-25T02:25:59Z
+status: done
+tags:
+- tests
+- cli
+title: Test the bee CLI end-to-end
+updated: 2026-10-25T02:31:55Z
+---
+
+bin/bee has no test. Cover: list keys, get scalar/array/hash, set each type via the command line, and that its type dispatch stays in sync with set_type in lib/BeePack.pm.
+
+Commit 1cc28ae (branch offen-2610). t/bee.t was red against old bin/bee (Failed to rename /tmp/X to <target outside /tmp>), green after. Also found: bee with no FILE argument gives an unhelpful croak (not fixed).
