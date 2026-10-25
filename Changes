@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+  - set_type now croaks on an unknown type instead of silently leaving the key
+    unset, matching what the bee command line already did.
+
 0.200     2026-09-16 01:45:18Z
 
   - Storage backend switched from CDB::TinyCDB to CDB_File, which carries its

@@ -65,4 +65,12 @@ my $ro = BeePack->open("$dir/db.bee");
 is( $ro->get_raw('arr_t'), $bee->get_raw('arr_d'), 'array bytes survive save and reopen' );
 is_deeply( $ro->get('hash_t'), { a => 1, b => 2 }, 'hash survives save and reopen' );
 
+# an unknown type must not silently drop the key
+for my $bad ( qw( k float x ) ) {
+  my $key = "unknown_$bad";
+  eval { $bee->set_type( $key, $bad, 'v' ) };
+  like( $@, qr/Unknown type \Q$bad\E/, "set_type croaks on unknown type $bad" );
+  is( $bee->exists($key), 0, "unknown type $bad did not set the key" );
+}
+
 done_testing;

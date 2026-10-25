@@ -117,6 +117,8 @@ sub set_type {
     $self->set($key,\%hash);
   } elsif ($t eq '') {
     $self->set($key,$value);
+  } else {
+    croak("Unknown type ".$type);
   }
 }
 
@@ -332,8 +334,9 @@ L<bee/DESCRIPTION>): C<i> integer (L</set_integer>), C<b> bool
 (L</set_bool>), C<s> string (L</set_string>), C<n> nil (L</set_nil>;
 C<$value> is ignored), C<a> array (L</set> with C<$value> dereferenced as an
 arrayref), C<h> hash (L</set> with C<$value> dereferenced as a hashref), or
-an empty/undefined C<$type> for a plain L</set>. A new type letter is a
-paired change: add the branch here and the matching branch in C<bee>'s
+an empty/undefined C<$type> for a plain L</set>. Any other type croaks
+with C<Unknown type>, as C<bee> does, instead of silently not setting the
+key. A new type letter is a paired change: add the branch here and the matching branch in C<bee>'s
 command-line dispatch.
 
 =method set_integer
