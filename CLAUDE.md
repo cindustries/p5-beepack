@@ -14,7 +14,8 @@ bumps and tags it.
 ## Delegation
 
 Delegate behavior-relevant code to the right agent instead of touching it yourself — the
-principle, the lanes and this repo's hazards are in `.claude/rules/beepack-rules.md`.
+principle is a shared house rule (skilletor bundle `getty-cpan-dist@getty`); the lanes and
+this repo's hazards are in `.claude/rules/beepack-rules.md`.
 
 | Task | Agent |
 |---|---|
