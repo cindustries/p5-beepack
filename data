@@ -1,0 +1,21 @@
+---
+claimed_at: 2026-10-25T02:31:48Z
+claimed_by: offen-2610
+class: standard
+completed: 2026-10-25T02:31:48Z
+created: 2026-09-14T05:21:53Z
+id: 2
+priority: medium
+started: 2026-10-25T02:25:53Z
+status: done
+tags:
+- tests
+title: 'Test coverage: get_raw and set_type dispatch'
+updated: 2026-10-25T02:31:48Z
+---
+
+No test exercises get_raw (raw MsgPack bytes) or the set_type first-char dispatch (i/b/s/n/a/h and empty). Add assertions, including that set_type array/hash round-trip equals the direct set() form.
+
+Commit 8ef773d (branch offen-2610): t/set_type.t. Pure coverage gap, so green against the old lib by nature (no behaviour changed); the unknown-type assertion that is red lands with k8.
+
+Also found: bee with no FILE argument gives an unhelpful croak (not fixed).
