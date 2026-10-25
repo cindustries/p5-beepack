@@ -269,7 +269,10 @@ as the destination C<CDB_File> renames the rebuilt file onto.
 =attr tempfile
 
 The path C<CDB_File> uses to build the new file before atomically renaming it
-onto L</filename> on L</save>. Its presence -- not a separate flag -- is what
+onto L</filename> on L</save>. It must be on the same
+filesystem as L</filename>, because the rename cannot cross filesystems --
+so not a C<tmpnam> name under a separate C</tmp> mount, but a sibling like
+C<"$filename.tmp.$$">. Its presence -- not a separate flag -- is what
 switches the pack to read/write mode: give a C<tempfile> (to L</open> or
 C<new>) and L</readonly> defaults to false; leave it out and the pack opens
 read-only. A pack that is not readonly but has no C<tempfile> is rejected at

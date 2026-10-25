@@ -2,6 +2,10 @@
 
   - set_type now croaks on an unknown type instead of silently leaving the key
     unset, matching what the bee command line already did.
+  - bee no longer fails to save when the .bee file lives on another filesystem
+    than the system temp dir: its temporary file is now created next to the
+    target. BeePack documents that tempfile must share the filesystem of
+    filename.
 
 0.200     2026-09-16 01:45:18Z
 

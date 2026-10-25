@@ -7,7 +7,6 @@ use strict;
 use warnings;
 use Carp qw( croak );
 use BeePack;
-use File::Temp qw/ tmpnam /;
 use Data::Dumper;
 
 my $beepack = shift @ARGV;
@@ -15,7 +14,9 @@ my $beepack = shift @ARGV;
 my $key = shift @ARGV;
 my $type = shift @ARGV;
 my @values = @ARGV;
-my $tmpfile = tmpnam();
+# next to the target: CDB_File renames it onto the target, which does not
+# cross filesystems
+my $tmpfile = defined $beepack ? "$beepack.tmp.$$" : undef;
 my @args = ( $beepack, defined $type ? ( $tmpfile ) : () );
 my $bee = BeePack->open(@args);
 
